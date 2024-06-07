@@ -47,11 +47,12 @@ public abstract class AbstractSorter
 	 */
 	protected AbstractSorter(Point[] pts) throws IllegalArgumentException
 	{
-		// TODO 
+		if(pts == null || pts.length == 0) {
+			throw new IllegalArgumentException();
+		}
+		points = new Point[pts.length];
+		copyOver(pts, points);
 	}
-
-		
-	
 	
 	
 
@@ -70,7 +71,9 @@ public abstract class AbstractSorter
 	 */
 	public void setComparator(int order) throws IllegalArgumentException
 	{
-		// TODO 
+		if(order > 1 || order < 0) {
+			throw new IllegalArgumentException();
+		}
 	}
 
 	
@@ -101,7 +104,7 @@ public abstract class AbstractSorter
 	 */
 	public void getPoints(Point[] pts)
 	{
-		// TODO 
+		copyOver(points, pts);
 	}
 	
 
@@ -113,6 +116,22 @@ public abstract class AbstractSorter
 	 */
 	protected void swap(int i, int j)
 	{
-		// TODO 
-	}	
+		Point temp = points[i];
+		points[i] = points[j];
+		points[j] = temp;
+	}
+	
+	
+	/*
+	 * copies the points in pts onto pts2
+	 * 
+	 * @param pts
+	 * @param pts2
+	 */
+	private static void copyOver(Point[] pts, Point[] pts2) {
+		for(int i = 0; i < pts.length; i++) {
+			Point p = new Point(pts[i]);
+			pts2[i] = p;
+		}
+	}
 }
