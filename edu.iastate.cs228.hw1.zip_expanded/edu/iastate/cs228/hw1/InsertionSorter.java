@@ -30,7 +30,8 @@ public class InsertionSorter extends AbstractSorter
 	 */
 	public InsertionSorter(Point[] pts) 
 	{
-		// TODO 
+		super(pts);
+		algorithm = "insertion sort";
 	}	
 
 	
