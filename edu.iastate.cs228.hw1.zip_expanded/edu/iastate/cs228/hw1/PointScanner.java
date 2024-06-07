@@ -1,5 +1,7 @@
 package edu.iastate.cs228.hw1;
 
+import java.io.File;
+
 /**
  * 
  * @author  Bryce Jensenius
@@ -8,6 +10,7 @@ package edu.iastate.cs228.hw1;
 
 import java.io.FileNotFoundException;
 import java.util.InputMismatchException;
+import java.util.Scanner;
 
 
 /**
@@ -25,7 +28,6 @@ public class PointScanner
 	private Point medianCoordinatePoint;  // point whose x and y coordinates are respectively the medians of 
 	                                      // the x coordinates and y coordinates of those points in the array points[].
 	private Algorithm sortingAlgorithm;    
-	
 		
 	protected long scanTime; 	       // execution time in nanoseconds. 
 	
@@ -38,7 +40,17 @@ public class PointScanner
 	 */
 	public PointScanner(Point[] pts, Algorithm algo) throws IllegalArgumentException
 	{
+		if(pts == null || pts.length == 0) {
+			throw new IllegalArgumentException();
+		}
+		points = new Point[pts.length];
 		
+		for(int i = 0; i < pts.length; i++) {
+			Point temp = new Point(pts[i]);
+			points[i] = temp;
+		}
+		
+		sortingAlgorithm = algo;
 	}
 
 	
@@ -51,7 +63,30 @@ public class PointScanner
 	 */
 	protected PointScanner(String inputFileName, Algorithm algo) throws FileNotFoundException, InputMismatchException
 	{
-		// TODO
+		File fp = new File(inputFileName);
+		Scanner length_scnr = new Scanner(fp);//two scanners because we need to know the length and verify it is even before initializing Points[]
+		Scanner val_scnr = new Scanner(fp);
+		int valCounter = 0;
+		
+		while(length_scnr.hasNextInt()) {
+			length_scnr.nextInt();
+			valCounter++;
+		}
+		
+		if(valCounter % 2 != 0) {
+			length_scnr.close();
+			val_scnr.close();
+			throw new InputMismatchException();
+		}
+		
+		points = new Point[valCounter/2];
+		
+		for(int i = 0; i < points.length; i++) {
+			points[i] = new Point(val_scnr.nextInt(), val_scnr.nextInt());
+		}
+		
+		length_scnr.close();
+		val_scnr.close();
 	}
 
 	
@@ -72,19 +107,35 @@ public class PointScanner
 		// TODO  
 		AbstractSorter aSorter; 
 		
-		// create an object to be referenced by aSorter according to sortingAlgorithm. for each of the two 
-		// rounds of sorting, have aSorter do the following: 
-		// 
-		//     a) call setComparator() with an argument 0 or 1. 
-		//
-		//     b) call sort(). 		
-		// 
-		//     c) use a new Point object to store the coordinates of the medianCoordinatePoint
-		//
-		//     d) set the medianCoordinatePoint reference to the object with the correct coordinates.
-		//
-		//     e) sum up the times spent on the two sorting rounds and set the instance variable scanTime. 
+		//assign to correct sort algorithm
+		if(sortingAlgorithm == Algorithm.SelectionSort) {
+			aSorter = new SelectionSorter(points);
+		}else if(sortingAlgorithm == Algorithm.InsertionSort) {
+			aSorter = new InsertionSorter(points);
+		}else if(sortingAlgorithm == Algorithm.MergeSort) {
+			aSorter = new MergeSorter(points);
+		}else {
+			aSorter = new QuickSorter(points);
+		}
 		
+		Point xSortMedian;
+		Point ySortMedian;
+		
+		aSorter.setComparator(0);
+		long startTime = System.nanoTime();
+		aSorter.sort();
+		long sortTime1 = System.nanoTime() - startTime;
+		xSortMedian = aSorter.getMedian();//grab median for x value
+		
+		aSorter.setComparator(1);
+		startTime = System.nanoTime();
+		aSorter.sort();
+		long sortTime2 = System.nanoTime() - startTime;
+		ySortMedian = aSorter.getMedian();//grab median for y value
+		
+		medianCoordinatePoint = new Point(xSortMedian.getX(), ySortMedian.getY());//make point with x sort median and y sort median
+		
+		scanTime = sortTime1 + sortTime2;
 	}
 	
 	
@@ -101,8 +152,7 @@ public class PointScanner
 	 */
 	public String stats()
 	{
-		return null; 
-		// TODO 
+		return sortingAlgorithm + " " + points.length + " " + scanTime;
 	}
 	
 	
@@ -113,8 +163,7 @@ public class PointScanner
 	@Override
 	public String toString()
 	{
-		return null; 
-		// TODO
+		return "MCP: " + medianCoordinatePoint.toString();
 	}
 
 	
@@ -128,10 +177,6 @@ public class PointScanner
 	 */
 	public void writeMCPToFile() throws FileNotFoundException
 	{
-		// TODO 
-	}	
-
-	
-
 		
+	}		
 }
