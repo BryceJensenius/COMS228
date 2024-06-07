@@ -7,7 +7,7 @@ import java.util.InputMismatchException;
 
 /**
  *  
- * @author
+ * @author Bryce Jensenius
  *
  */
 
@@ -41,7 +41,7 @@ public class MergeSorter extends AbstractSorter
 	@Override 
 	public void sort()
 	{
-		// TODO 
+		mergeSortRec(points);
 	}
 
 	
@@ -54,10 +54,47 @@ public class MergeSorter extends AbstractSorter
 	 */
 	private void mergeSortRec(Point[] pts)
 	{
+		if(pts.length < 2) {
+			return;
+		}
+		Point[] left = new Point[pts.length / 2];
+		Point[] right = new Point[pts.length - left.length];
 		
+		for(int i = 0; i < left.length; i++) {
+			left[i] = pts[i];
+		}
+		for(int j = 0; j < right.length; j++) {
+			right[j] = pts[left.length + j];
+		}
+		mergeSortRec(left);
+		mergeSortRec(right);
+		merge(pts, left, right);
 	}
 
 	
-	// Other private methods if needed ...
-
+	private void merge(Point[] sortPoints, Point[] pts, Point[] pts2) {
+		int firstLeft = 0;
+		int firstRight = 0;
+		int curIndex = 0;
+		
+		while(firstLeft < pts.length && firstRight < pts2.length) {
+			if(pointComparator.compare(pts[firstLeft], pts2[firstRight]) <= 0) {
+				sortPoints[curIndex] = pts[firstLeft];
+				firstLeft++;
+			}else {
+				sortPoints[curIndex] = pts[firstRight];
+				firstRight++;
+			}
+			curIndex++;
+		}
+		
+		while(firstLeft < pts.length) {
+			sortPoints[curIndex] = pts[firstLeft++];
+			curIndex++;
+		}
+		while(firstRight < pts2.length) {
+			sortPoints[curIndex] = pts2[firstRight++];
+			curIndex++;
+		}
+	}
 }

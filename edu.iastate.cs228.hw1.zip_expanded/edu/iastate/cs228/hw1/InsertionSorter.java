@@ -8,7 +8,7 @@ import java.util.InputMismatchException;
 
 /**
  *  
- * @author
+ * @author Bryce Jensenius
  *
  */
 
@@ -41,6 +41,14 @@ public class InsertionSorter extends AbstractSorter
 	@Override 
 	public void sort()
 	{
-		// TODO 
+		for(int i = 1; i < points.length; i++) {
+			int j = i - 1;
+			Point temp = points[i];
+			while(j > -1 && pointComparator.compare(points[j], temp) > 0) {
+				points[j+1] = points[j];
+				j--;
+			}
+			points[j+1] = temp;
+		}
 	}		
 }

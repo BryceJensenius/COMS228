@@ -8,7 +8,7 @@ import java.util.InputMismatchException;
 
 /**
  *  
- * @author
+ * @author Bryce Jensenius
  *
  */
 
@@ -42,7 +42,7 @@ public class SelectionSorter extends AbstractSorter
 	@Override 
 	public void sort()
 	{
-		for(int i = 0; i < points.length; i++) {
+		for(int i = 0; i < points.length - 1; i++) {
 			int minIndex = i;
 			for(int j = i+1; j < points.length; j++) {
 				if(pointComparator.compare(points[minIndex], points[j]) > 0) {

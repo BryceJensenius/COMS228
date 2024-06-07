@@ -2,7 +2,7 @@ package edu.iastate.cs228.hw1;
 
 /**
  *  
- * @author
+ * @author Bryce Jensenius
  *
  */
 
@@ -73,6 +73,24 @@ public abstract class AbstractSorter
 	{
 		if(order > 1 || order < 0) {
 			throw new IllegalArgumentException();
+		}
+		
+		if(order == 0) {
+			Point.xORy = true;
+			pointComparator = new Comparator<Point>(){
+				@Override
+				public int compare(Point p1, Point p2) {
+					return p1.compareTo(p2);
+				}
+			};
+		}else{
+			Point.xORy = false;
+			pointComparator = new Comparator<Point>(){
+				@Override
+				public int compare(Point p1, Point p2) {
+					return p1.compareTo(p2);
+				}
+			};
 		}
 	}
 
