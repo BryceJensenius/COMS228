@@ -20,8 +20,7 @@ import java.util.InputMismatchException;
 
 public class SelectionSorter extends AbstractSorter
 {
-	// Other private instance variables if you need ... 
-	
+
 	/**
 	 * Constructor takes an array of points.  It invokes the superclass constructor, and also 
 	 * set the instance variables algorithm in the superclass.

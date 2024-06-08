@@ -71,28 +71,35 @@ public class MergeSorter extends AbstractSorter
 		merge(pts, left, right);
 	}
 
-	
+	/*
+	 * Helper method called by recursive sort method which merges two halves of an array into one. 
+	 * The merged array is put into the sortPoints array parameter to be used
+	 * 
+	 * @param sortPoints - Array of merged together points
+	 * @param pts - left half of array needing merged
+	 * @param pts2 - right half of array needing merged
+	 */
 	private void merge(Point[] sortPoints, Point[] pts, Point[] pts2) {
 		int firstLeft = 0;
 		int firstRight = 0;
-		int curIndex = 0;
+		int curIndex = 0;//index in sortPoints or merged array
 		
-		while(firstLeft < pts.length && firstRight < pts2.length) {
-			if(pointComparator.compare(pts[firstLeft], pts2[firstRight]) <= 0) {
+		while(firstLeft < pts.length && firstRight < pts2.length) {//run while both halves still have points
+			if(pointComparator.compare(pts[firstLeft], pts2[firstRight]) <= 0) {//left is lower so add it to merged
 				sortPoints[curIndex] = pts[firstLeft];
 				firstLeft++;
-			}else {
-				sortPoints[curIndex] = pts[firstRight];
+			}else {//right is lower so add it to merged
+				sortPoints[curIndex] = pts2[firstRight];
 				firstRight++;
 			}
 			curIndex++;
 		}
 		
-		while(firstLeft < pts.length) {
+		while(firstLeft < pts.length) {//add remaining point in left half
 			sortPoints[curIndex] = pts[firstLeft++];
 			curIndex++;
 		}
-		while(firstRight < pts2.length) {
+		while(firstRight < pts2.length) {//add any remaining points in right half
 			sortPoints[curIndex] = pts2[firstRight++];
 			curIndex++;
 		}

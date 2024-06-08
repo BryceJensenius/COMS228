@@ -22,7 +22,11 @@ import java.util.Random;
 
 public class CompareSorters 
 {
+	/*
+	 * formatting string to be printed out
+	 */
 	private static final String bar = "-----------------------------------";
+	
 	/**
 	 * Repeatedly take integer sequences either randomly generated or read from files. 
 	 * Use them as coordinates to construct points.  Scan these points with respect to their 
@@ -32,78 +36,82 @@ public class CompareSorters
 	 **/
 	public static void main(String[] args) throws FileNotFoundException
 	{		
-		// TODO 
-		// 
-		// Conducts multiple rounds of comparison of four sorting algorithms.  Within each round, 
-		// set up scanning as follows: 
-		// 
-		//    a) If asked to scan random points, calls generateRandomPoints() to initialize an array 
-		//       of random points. 
-		// 
-		//    b) Reassigns to the array scanners[] (declared below) the references to four new 
-		//       PointScanner objects, which are created using four different values  
-		//       of the Algorithm type:  SelectionSort, InsertionSort, MergeSort and QuickSort. 
-		// 
-		// 	
-		Scanner scnr = new Scanner(System.in);
+		PointScanner[] scanners = new PointScanner[4]; 
 		
-		int response = 0;
-		int numPoints = 0;
-		String fileName;
-		boolean validInput = false;
+		Scanner scnr = new Scanner(System.in);//scanner for user input
 		
-		while(!validInput) {
-			System.out.println("Performances of Four Sorting Algorithms in Point Scanning\n");
-			System.out.println("keys: 1 (random integers) 2 (file input) 3 (exit)");
-			System.out.print("Trial 1: ");
-			try {
-				response = scnr.nextInt();
-				validInput = true;
-			}catch(InputMismatchException e) {
-				System.out.println("Enter 1 2 or 3\n");
-				scnr.next();
-			}
-		}
+		int response = 0;//store user responses
+		int numPoints = 0;//number of points to generate
+		int trial = 1;//current sort trial
+			
+		//print introductory messages once
+		System.out.println("Performances of Four Sorting Algorithms in Point Scanning\n");
+		System.out.println("keys: 1 (random integers) 2 (file input) 3 (exit)");
 		
-		validInput = false;
+		while(true) {//intentionally infinite loop that exits when you input 3, or anything but 1 and 2
+			String fileName = null;
+			boolean validInput = false;
 		
-		if(response == 1) {
+			//check which point input method will be used until valid int is given
 			while(!validInput) {
-				System.out.print("Enter number of random points: ");
+				System.out.printf("Trial %d: ", trial);
+				
 				try {
-					numPoints = scnr.nextInt();
+					response = scnr.nextInt();
 					validInput = true;
-				}catch(InputMismatchException e) {
-					System.out.println("Enter a positive integer\n");
+				}catch(InputMismatchException e) {//failed to give an integer
+					System.out.println("Enter 1 2 or 3\n");
 					scnr.next();
 				}
 			}
 			
-			generateRandomPoints(numPoints, new Random());
-		}else if(response == 2) {
-			System.out.println("Points from a file");
-			System.out.print("File name: ");
-			fileName = scnr.next();
+			validInput = false;
+			
+			if(response == 1) {//generate random numPoints
+				while(!validInput) {//run until a valid int is given
+					System.out.print("Enter number of random points: ");
+					try {
+						numPoints = scnr.nextInt();
+						validInput = true;
+					}catch(InputMismatchException e) {//failed to give an integer
+						System.out.println("Enter a positive integer\n");
+						scnr.next();
+					}
+				}
+				
+				Point[] pointList = generateRandomPoints(numPoints, new Random());
+				
+				//initialize the 4 scanners each with different algorithm to the generated points
+				scanners[0] = new PointScanner(pointList, Algorithm.SelectionSort);
+				scanners[1] = new PointScanner(pointList, Algorithm.InsertionSort);
+				scanners[2] = new PointScanner(pointList, Algorithm.MergeSort);
+				scanners[3] = new PointScanner(pointList, Algorithm.QuickSort);
+			}else if(response == 2) {//scan from file
+				System.out.println("Points from a file");
+				System.out.print("File name: ");
+				fileName = scnr.next();
+				
+				//initialize the 4 scanners each with different algorithm to the file where points are contained
+				scanners[0] = new PointScanner(fileName, Algorithm.SelectionSort);
+				scanners[1] = new PointScanner(fileName, Algorithm.InsertionSort);
+				scanners[2] = new PointScanner(fileName, Algorithm.MergeSort);
+				scanners[3] = new PointScanner(fileName, Algorithm.QuickSort);
+			}else {//exit program
+				scnr.close();
+				return;
+			}
+			
+			System.out.println("\nalgorithm\tsize\ttime (ns)");
+			System.out.println(bar);
+
+			//run scan to sort with all 4 point scanners then print the statistics
+			for(PointScanner p : scanners) {
+				p.scan();
+				System.out.println(p.stats());
+			}
+			System.out.println(bar + "\n");
+			trial++;
 		}
-		
-		System.out.println("algorithm\tsize\ttime (ns)");
-		System.out.println(bar);
-		
-		PointScanner[] scanners = new PointScanner[4]; 
-		
-		// For each input of points, do the following. 
-		// 
-		//     a) Initialize the array scanners[].  
-		//
-		//     b) Iterate through the array scanners[], and have every scanner call the scan() 
-		//        method in the PointScanner class.  
-		//
-		//     c) After all four scans are done for the input, print out the statistics table from
-		//		  section 2.
-		//
-		// A sample scenario is given in Section 2 of the project description. 
-		
-		scnr.close();
 	}
 	
 	
@@ -120,13 +128,14 @@ public class CompareSorters
 	 */
 	public static Point[] generateRandomPoints(int numPts, Random rand) throws IllegalArgumentException
 	{ 
+		
 		if(numPts < 1) {
 			throw new IllegalArgumentException();
 		}
 		
 		Point[] points = new Point[numPts];
 		
-		for(int i = 0; i < numPts; i++) {
+		for(int i = 0; i < numPts; i++) {//initialize each point with random x value and random y value in correct range
 			points[i] = new Point(rand.nextInt(101) - 50, rand.nextInt(101) - 50);
 		}
 		

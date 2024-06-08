@@ -29,16 +29,6 @@ public abstract class AbstractSorter
 	protected Comparator<Point> pointComparator = null;  
 	
 	
-	// Add other protected or private instance variables you may need. 
-	
-
-	protected AbstractSorter()
-	{
-		// No implementation needed. Provides a default super constructor to subclasses. 
-		// Removable after implementing SelectionSorter, InsertionSorter, MergeSorter, and QuickSorter.
-	}
-	
-	
 	/**
 	 * This constructor accepts an array of points as input. Copy the points into the array points[]. 
 	 * 
