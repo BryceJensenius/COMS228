@@ -127,8 +127,12 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
   @Override
   public E remove(int pos)
   {
-    // TODO Auto-generated method stub
-    return null;
+    if(pos < 0 || pos >= size) {
+    	throw new IndexOutOfBoundsException();
+    }
+    
+    NodeInfo nodeInfo = find(pos);//find the element so it can be removed with helper method
+    return remove(nodeInfo);
   }
 
   /**
@@ -160,22 +164,23 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
   @Override
   public Iterator<E> iterator()
   {
-    // TODO Auto-generated method stub
-    return null;
+    return listIterator();
   }
 
   @Override
   public ListIterator<E> listIterator()
   {
-    // TODO Auto-generated method stub
-    return null;
+    return new StoutListIterator(0);
   }
 
   @Override
   public ListIterator<E> listIterator(int index)
   {
-    // TODO Auto-generated method stub
-    return null;
+    if(index >= 0 && index <= size) {
+    	return new StoutListIterator(index);
+    }
+    
+    throw new IndexOutOfBoundsException();
   }
   
   /**
@@ -247,24 +252,13 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
       sb.append("]");
       return sb.toString();
   }
-
-  /*
-   * Store location of a specific item within a node
-   */
-  private class NodeInfo{
-	  public Node node;
-	  public int offset;
-	  public NodeInfo(Node node, int offset) {
-		  this.node = node;
-		  this.offset = offset;
-	  }
-  }
   
   /*
    * Locates the item at the real index of pos returning the node and index in that node
    * @param pos - real position to find
    * @return node object and index in that object of the item found
    */
+  
   private NodeInfo find(int pos) {
 	  
 	  //getting first element, head
@@ -310,7 +304,19 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
 		  if(node.count < nodeSize) {//still room in node so add at given index
 			  node.addItem(index, item);
 		  }else {//no room left in this node
+			  Node addNode = new Node();
+			  link(node, addNode);
 			  
+			  //this node is now full so put split the elements between this and the second node, keeping order
+			  for(int i = nodeSize - 1; i >= nodeSize - nodeSize/2; i--) {
+				    addNode.addItem(0, node.data[i]);//from end of node to middle, move the element to new node
+				    node.removeItem(i);
+			  }
+			  if(index <= nodeSize/2) {//it needs to be added to first half
+				  node.addItem(index, item);
+			  }else {//add to second half, new node
+				  addNode.addItem(index - nodeSize/2, item);//calculate how far into second node
+			  }
 		  }
 	  }else {
 		  if(size == 0) {
@@ -435,14 +441,31 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
   {
 	// constants you possibly use ...   
 	  
-	// instance variables ... 
+	/*
+	 * current Index the cursor is on
+	 */
+	private int cursorIndex;
+	
+	/*
+	 * the last accessed nodes information
+	 */
+	private NodeInfo pending;
+	
+	/*
+	 * Previous move direction
+	 * 0 = none
+	 * 1 = backward
+	 * -1 = forward
+	 */
+	private int direction = 0;
 	  
     /**
      * Default constructor 
      */
     public StoutListIterator()
     {
-    	// TODO 
+    	cursorIndex = 0;
+    	pending = null;
     }
 
     /**
@@ -451,36 +474,112 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
      */
     public StoutListIterator(int pos)
     {
-    	// TODO 
+    	if(pos < 0 || pos > size) {
+    		throw new IndexOutOfBoundsException();
+    	}
+    	cursorIndex = pos;
+    	pending = null;
     }
 
     @Override
     public boolean hasNext()
     {
-    	// TODO 
-    	return true;
+    	return (cursorIndex < size);
     }
 
     @Override
     public E next()
     {
-    	// TODO 
-    	return null;
+    	if(hasNext()){
+    		pending = find(cursorIndex++);
+    		direction = -1;
+    		return pending.node.data[pending.offset];
+    	}
+    	throw new NoSuchElementException();
     }
 
-    @Override
+	@Override
     public void remove()
     {
-    	// TODO 
+    	if(direction == 0) {//no element to be removed
+    		throw new IllegalStateException();
+    	}
+ 
+    	if(direction == -1) {
+    		cursorIndex--;//removed from left so it gets shifted one
+    	}
+    	
+    	StoutList.this.remove(pending);
+    	pending = null;
+    	direction = 0;
     }
-    
-    // Other methods you may want to add or override that could possibly facilitate 
-    // other operations, for instance, addition, access to the previous element, etc.
-    // 
-    // ...
-    // 
+
+	@Override
+	public boolean hasPrevious() {
+		return cursorIndex > 0;
+	}
+
+	@Override
+	public E previous() {
+		if(hasPrevious()) {
+			NodeInfo nodeInfo;
+			direction = 1;
+			nodeInfo = find(--cursorIndex);
+			
+			if(cursorIndex + 1 < size) {//if it wasn't at the last element set to pending, otherwise it is already there
+				pending = nodeInfo;
+			}
+			
+			return pending.node.data[pending.offset];
+		}
+		
+		throw new NoSuchElementException();
+	}
+
+	/*
+	 * index of element returned if next is used
+	 */
+	@Override
+	public int nextIndex() {
+		return cursorIndex;
+	}
+
+	/*
+	 * Index of element returned if previous is used
+	 */
+	@Override
+	public int previousIndex() {
+		return cursorIndex - 1;
+	}
+
+	/*
+	 * sets the previously returned element's data to e
+	 * @param e - data to be set to
+	 */
+	@Override
+	public void set(E e) {
+		if(e == null) {
+			throw new NullPointerException();
+		}
+		if(direction == 0) {
+			throw new IllegalStateException();
+		}
+		pending.node.data[pending.offset] = e; 
+	}
+
+	/*
+	 * Add a new data element where the cursor is
+	 * @param e - data point to add
+	 */
+	@Override
+	public void add(E e) {
+		if(e == null) {
+			throw new NullPointerException();
+		}
+		direction = 0;//can no longer remove/set
+		StoutList.this.add(cursorIndex++, e);//add at the cursors index, push cursor forward 1
+	}    
   }
-  
 
   /**
    * Sort an array arr[] using the insertion sort algorithm in the NON-DECREASING order. 
@@ -489,7 +588,16 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
    */
   private void insertionSort(E[] arr, Comparator<? super E> comp)
   {
-	  // TODO
+	  for(int i = 1; i < arr.length; i++) {
+		  E temp = arr[i];
+		  int j = i - 1;
+		  
+		  while(j >= 0 && comp.compare(temp, arr[j]) <= 0) {
+			  arr[j+1] = arr[j];
+			  j--;
+		  }
+		  arr[j+1] = temp;
+	  }
   }
   
   /**
@@ -503,6 +611,36 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
   {
 	  // TODO
   }
- 
 
+  /*
+   * Store location of a specific item within a node
+   */
+  private class NodeInfo{
+	  public Node node;
+	  public int offset;
+	  public NodeInfo(Node node, int offset) {
+		  this.node = node;
+		  this.offset = offset;
+	  }
+  }
+  
+  /*
+   * Connects Node n2 just after Node n1
+   * @param n1 - node to left
+   * @param n2 - node to add on right
+   */
+  private void link(Node n1, Node n2) {
+	  n2.previous = n1;
+	  n2.next = n1.next;
+	  n1.next.previous = n2;
+	  n1.next = n2;
+  }
+  
+  /*
+   * Given element info with node and index, remove that element from the stoutList
+   * @param n - location of element to be removed
+   */
+  private E remove(NodeInfo n) {
+	  
+  }
 }
