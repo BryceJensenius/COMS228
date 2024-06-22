@@ -88,12 +88,21 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
 	  this.size = size; 
   }
 
+  /*
+   * Get the size of the stoutList
+   * @return size
+   */
   @Override
   public int size()
   {
     return size;
   }
   
+  /*
+   * Adds element to the stoutlist at the end
+   * if item is null, throws exception
+   * @param item - element to add
+   */
   @Override
   public boolean add(E item)
   {
@@ -106,6 +115,13 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
     return true;
   }
   
+  /*
+   * Add an element to the stoutlist at a specific index
+   * Illegal argument exception if not within the stoutlist size
+   * Null point exception if element is null
+   * @param pos - index position
+   * @param idem - element to add
+   */
   @Override
   public void add(int pos, E item)
   {
@@ -124,6 +140,10 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
 	  addElement(item, nodeInfo.node, nodeInfo.offset);
   }
 
+  /*
+   * Removes the element at index pos from stoutlist
+   * @param pos - index to remove
+   */
   @Override
   public E remove(int pos)
   {
@@ -511,12 +531,19 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
     	pending = null;
     }
 
+    /*
+     * @return if the iterator has another element to go to
+     */
     @Override
     public boolean hasNext()
     {
     	return (cursorIndex < size);
     }
 
+    /*
+     * Moves cursor to the next element and returns element it was on
+     * @return data of element cursor was on
+     */
     @Override
     public E next()
     {
@@ -528,6 +555,9 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
     	throw new NoSuchElementException();
     }
 
+    /*
+     * Removes the mending element/last element returned
+     */
 	@Override
     public void remove()
     {
@@ -549,6 +579,10 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
 		return cursorIndex > 0;
 	}
 
+	/*
+	 * Moves iterator left in stoutlist and returns the element it lands on
+	 * @return data of element iterator lands on
+	 */
 	@Override
 	public E previous() {
 		if(hasPrevious()) {
