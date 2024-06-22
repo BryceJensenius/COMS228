@@ -147,7 +147,22 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
    */
   public void sort()
   {
-	  // TODO 
+	  E[] elem = (E[]) new Comparable[size()];
+	  
+	  Iterator<E> iter = iterator();//make iterator at start index
+	  
+	  for(int i = 0; i < size; i++) {//put every element into the array
+		  elem[i] = iter.next();
+	  }
+	  
+	  size = 0;//clear StoutList by removing pointers
+	  head.next = tail;
+	  tail.previous = head;
+	  
+	  insertionSort(elem, new ElementComparator());//sort with the comparator implemented
+	  
+	  //add all the elements in the sorted list back into StoutList, method from AbstractSequentialList<E>
+	  this.addAll(Arrays.asList(elem));
   }
   
   /**
@@ -158,7 +173,22 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
    */
   public void sortReverse() 
   {
-	  // TODO 
+	  E[] elem = (E[]) new Comparable[size()];
+	  
+	  Iterator<E> iter = iterator();//make iterator at start index
+	  
+	  for(int i = 0; i < size; i++) {//put every element into the array
+		  elem[i] = iter.next();
+	  }
+	  
+	  size = 0;//clear StoutList by removing pointers
+	  head.next = tail;
+	  tail.previous = head;
+	  
+	  bubbleSort(elem);
+	  
+	  //add all the elements in the sorted list back into StoutList
+	  this.addAll(Arrays.asList(elem));
   }
   
   @Override
@@ -170,7 +200,7 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
   @Override
   public ListIterator<E> listIterator()
   {
-    return new StoutListIterator(0);
+    return listIterator(0);
   }
 
   @Override
@@ -526,11 +556,11 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
 			direction = 1;
 			nodeInfo = find(--cursorIndex);
 			
-			if(cursorIndex + 1 < size) {//if it wasn't at the last element set to pending, otherwise it is already there
+			if(cursorIndex + 1 != size) {//if it wasn't at the last element set to pending
 				pending = nodeInfo;
 			}
 			
-			return pending.node.data[pending.offset];
+			return nodeInfo.node.data[nodeInfo.offset];
 		}
 		
 		throw new NoSuchElementException();
@@ -609,7 +639,22 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
    */
   private void bubbleSort(E[] arr)
   {
-	  // TODO
+	  boolean sorted;
+	  for(int i = 1; i < arr.length; i++) {
+		  sorted = true;
+		  for(int j = 0; j < arr.length - i; j++) {
+			  if(arr[j].compareTo(arr[j+1]) < 0) {//if element on left is less, swap it to right
+				  sorted = false;
+				  E temp = arr[j];
+				  arr[j] = arr[j+1];
+				  arr[j+1] = temp;
+			  }
+		  }
+		  
+		  if(sorted) {
+			  return;
+		  }
+	  }
   }
 
   /*
@@ -637,10 +682,55 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
   }
   
   /*
+   * Remove given node from the StoutList
+   * @param n - node to be removed
+   */
+  private void unlink(Node n) {
+	  n.previous.next = n.next;
+	  n.next.previous = n.previous;
+  }
+  
+  /*
    * Given element info with node and index, remove that element from the stoutList
    * @param n - location of element to be removed
    */
   private E remove(NodeInfo n) {
+	  E data = n.node.data[n.offset];//grab the data before removal
 	  
+	  if(n.node.next == tail && n.node.count == 1) {//last node, one element, easy case of directly remove element
+		  unlink(n.node);
+	  }else if(n.node.count > nodeSize/2 || n.node.next == tail) {//node is last node or has enough element to safely just remove
+		  n.node.removeItem(n.offset);
+	  }else {//Complicated, less than or half full node, not last node
+		  
+		  //remove the element and then add element from next node
+		  n.node.removeItem(n.offset);
+		  
+		  if(n.node.next.count > nodeSize / 2) {//node after node needing another element is big enough to have one taken
+			  n.node.addItem(n.node.next.data[0]);//take first element from next node and put it in this node
+			  n.node.next.removeItem(0);
+		  }else {//both nodes are half or less full, so we can combine into one \-('0')-/
+			  for(E elem : n.node.next.data) {//for every element in next node, add to this node
+				  if(elem == null) {//safety check, do nothing
+					  
+				  }else {
+					  n.node.addItem(elem);
+				  }
+			  }
+			  unlink(n.node.next);//Remove node we pulled all the elements from
+		  }
+	  }
+	  size--;//update size becasue element was removed
+	  return data;
+  }
+  
+  /*
+   * Comparator to be used for comparing elements that are Comparable
+   */
+  private static class ElementComparator<E extends Comparable<? super E>> implements Comparator<E>{
+	  @Override
+	  public int compare(E e1, E e2) {
+		  return e1.compareTo(e2);
+	  }
   }
 }
