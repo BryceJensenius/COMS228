@@ -18,6 +18,130 @@ public class BinaryTree<E extends Comparable<? super E>> {
 		}
 	}
 	
+	public void levelOrderTraversal2(Node n) {
+		if(n == null) {
+			return;
+		}
+		Queue<Node> q = new QueueImplementation<>();
+		q.add(n);
+		while(!q.isEmpty()) {
+			Node cur = q.poll();
+			System.out.println(cur.data);
+			if(cur.left != null) {
+				q.add(cur.left);
+			}
+			if(cur.right != null) {
+				q.add(cur.right);
+			}
+		}
+	}
+	
+	public boolean add2(E key) {
+		if(root == null) {
+			root = new Node(key, null);
+			size++;
+			return true;
+		}
+		
+		Node cur = root;
+		while(true) {
+			int comp = key.compareTo(cur.data);
+			if(comp == 0) {
+				return false;
+			}else if(comp < 0) {
+				if(cur.left == null) {
+					cur.left = new Node(key, cur);
+					size++;
+					return true;
+				}
+				cur = cur.left;
+			}else {
+				if(cur.right == null) {
+					cur.right = new Node(key, cur);
+					size++;
+					return true;
+				}
+				cur = cur.right;
+			}
+		}
+	}
+	
+	public Node binarySearchTree2(E key) {
+		if(key == null) {
+			return null;
+		}
+		
+		Node cur = root;
+		while(cur != null) {
+			int comp = key.compareTo(cur.data);
+			if(comp == 0) {
+				return cur;
+			}else if(comp < 0) {
+				cur = cur.left;
+			}else {
+				cur = cur.right;
+			}
+		}
+		return cur;
+	}
+	
+	public Node successor2(Node n) {
+		if(n == null) {
+			return null;
+		}
+		Node s = null;
+		if(n.right != null) {
+			s = n.right;
+			while(s.left != null) {
+				s = s.left;
+			}
+		}else {
+			s = n.parent;
+			Node child = n;
+			while(s != null && child == s.right) {
+				child = s;
+				s = s.parent;
+			}
+		}
+		return s;
+	}
+	
+	public void unlink2(E key) {
+		Node n = binarySearchTree2(key);
+		if(n == null) {
+			return;
+		}
+		
+		if(n.right != null && n.left != null) {
+			Node s = successor2(n);
+			n.data = s.data;
+			n = s;
+		}
+		
+		Node replacement = null;
+		if(n.right != null) {
+			replacement = n.right;
+		}else if(n.left != null) {
+			replacement = n.left;
+		}
+		
+		if(n.parent == null) {
+			root = replacement;
+		}else {
+			if(n == n.parent.right) {
+				n.parent.right = replacement;
+			}else {
+				n.parent.left = replacement;
+			}
+		}
+		
+		if(replacement != null) {
+			replacement.parent = n.parent;
+		}
+		
+		size--;
+	}
+	
 	/*
 	 * Default height call of root node
 	 */
@@ -36,19 +160,91 @@ public class BinaryTree<E extends Comparable<? super E>> {
 		return 1 + Math.max(getHeight(cur.left), getHeight(cur.right));
 	}
 	
+	public void unlink(Node n) {
+		if(n == null) {
+			throw new NullPointerException();
+		}
+		
+		if(n.right != null && n.left != null) {
+			Node s = successor(n);
+			n.data = s.data;
+			n = s;
+		}
+		Node replacement = null;
+		if(n.left != null) {
+			replacement = n.left;
+		}else if(n.right != null) {
+			replacement = n.right;
+		}
+		
+		if(n.parent == null) {
+			root = replacement;
+		}else {
+			if(n == n.parent.left) {
+				n.parent.left = replacement;
+			}else {
+				n.parent.right = replacement;
+			}
+		}
+		
+		if(replacement != null) {
+			replacement.parent = n.parent;
+		}
+		size--;
+	}		
+	
+	public Node successor(Node n) {
+		if(n == null) {
+			return null;
+		}
+		Node s = null;
+		if(n.right != null) {
+			s = n.right;
+			while(s.left != null) {
+				s = s.left;
+			}
+		}else {
+			s = n.parent;
+			Node child = n;
+			while(s != null && child == s.right) {
+				child = s;
+				s = s.parent;
+			}
+		}
+		return s;
+	}
+	
 	public boolean add(E key) {
 		if(root == null) {
 			root = new Node(key, null);
 			size++;
 			return true;
 		}
+		
+		Node cur = root;
+		while(true) {
+			int comp = key.compareTo(cur.data);
+			if(comp == 0) {
+				return false;
+			}else if(comp < 0) {
+				if(cur.left == null) {
+					cur.left = new Node(key, cur);
+					size++;
+					return true;
+				}
+				cur = cur.left;
+			}else {
+				if(cur.right == null) {
+					cur.right = new Node(key, cur);
+					size++;
+					return true;
+				}
+				cur = cur.right;
+			}
+		}
 	}
 	
 	public Node binarySearch(E data) {
-		if(data == null) {
-			return null;
-		}
-		
 		Node current = root;
 		
 		while(current != null) {
@@ -61,6 +257,7 @@ public class BinaryTree<E extends Comparable<? super E>> {
 				current = current.right;
 			}
 		}
+		
 		return current;
 	}
 	
@@ -79,25 +276,25 @@ public class BinaryTree<E extends Comparable<? super E>> {
 	}
 	
 	public void levelOrdertTraversal() {
-		levelOrdertTraversalRec(root);
+		levelOrderTraversal(root);
 	}
 	
-	private void levelOrdertTraversalRec(Node cur){
-		if(cur == null) {
+	public void levelOrderTraversal(Node n) {
+		if(n == null) {
 			return;
 		}
-		Queue<Node> q = new QueueImplementation<Node>();
 		
-		q.add(cur);
-		
+		Queue<Node> q = new QueueImplementation<>();
+		q.add(n);
 		while(!q.isEmpty()) {
-			Node current = q.poll();
-			
-			System.out.println(current.data);
-			
-			q.add(current.left);
-			q.add(current.right);
+			Node cur = q.poll();
+			System.out.println(cur.data);
+			if(cur.left != null) {
+				q.add(cur.left);
+			}
+			if(cur.right != null) {
+				q.add(cur.right);
+			}
 		}
-		
 	}
 }
